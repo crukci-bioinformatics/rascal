@@ -40,7 +40,7 @@ absolute_copy_number_distance <- function(ploidy, cellularity,
     if (distance_function[1] == "MAD") {
       distance <- weighted.mean(differences, weights, na.rm = TRUE)
     } else if (distance_function[1] == "RMSD") {
-      distance <- sqrt(weighted.mean(differences ** 2, weights, na.rm = TRUE))
+      distance <- sqrt(weighted.mean(differences ^ 2, weights, na.rm = TRUE))
     }
   }
 
