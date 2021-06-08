@@ -7,6 +7,7 @@
 start_shiny_app(
   load_sample_data = TRUE,
   launch_browser = TRUE,
+  host = getOption("shiny.host", "127.0.0.1"),
   port = getOption("shiny.port")
 )
 }
@@ -15,6 +16,11 @@ start_shiny_app(
 
 \item{launch_browser}{launch the application in a web browser on starting the
 Shiny app.}
+
+\item{host}{The IPv4 address that the application should listen on. Defaults
+to the shiny.host option, if set, or "127.0.0.1" if not. The default value of
+"127.0.0.1" will only allow the current machine to access the Shiny app; set
+to "0.0.0.0" to allow other clients to connect.}
 
 \item{port}{the TCP port that the application should listen on.}
 }
