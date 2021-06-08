@@ -4,13 +4,19 @@
 \alias{start_shiny_app}
 \title{Shiny app for absolute copy number scaling}
 \usage{
-start_shiny_app(load_sample_data = TRUE, launch_browser = TRUE)
+start_shiny_app(
+  load_sample_data = TRUE,
+  launch_browser = TRUE,
+  port = getOption("shiny.port")
+)
 }
 \arguments{
 \item{load_sample_data}{load a sample data set on starting the Shiny app.}
 
 \item{launch_browser}{launch the application in a web browser on starting the
 Shiny app.}
+
+\item{port}{the TCP port that the application should listen on.}
 }
 \value{
 opens the Shiny app in a web browser.
