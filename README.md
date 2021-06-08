@@ -4,7 +4,7 @@
 
 ## Installation and usage
 
-Please see the [Wiki](https://github.com/crukci-bioinformatics/rascal/wiki) pages for details on installing and using the Shiny app and underlying functions within the R package.
+Please see the [wiki pages](https://github.com/crukci-bioinformatics/rascal/wiki) for details on installing and using the Shiny app and underlying functions within the R package.
 
 
 
