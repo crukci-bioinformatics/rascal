@@ -1,0 +1,28 @@
+Package: rascal
+Type: Package
+Title: Shiny app and functions for scaling relative copy number data to absolute values
+Version: 0.6.0
+Author: Matt Eldridge
+Maintainer: Matt Eldridge <matthew.eldridge@cruk.cam.ac.uk>
+Description: R package and Shiny app providing functions for scaling relative copy number to absolute values for shallow whole genome sequencing of cancer samples and estimating the tumour ploidy and cellularity.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Depends: R (>= 4.0.0)
+Imports:
+  tibble,
+  readr,
+  tidyr,
+  dplyr,
+  stringr,
+  purrr,
+  ggplot2,
+  scales,
+  shiny,
+  shinyjs,
+  colourpicker,
+  DT
+Suggests:
+  Biobase,
+  QDNAseq
+RoxygenNote: 7.1.1
