@@ -83,13 +83,13 @@ if (str_detect(input_file, "\\.rds$")) {
 }
 
 # check contents are correct and obtain sample names
-if (is.data.frame(copy_number)) {
+if (any(class(copy_number) == "data.frame")) {
   required_columns <- c("chromosome", "start", "end", "segmented")
   missing_columns <- setdiff(required_columns, colnames(copy_number))
   if (length(missing_columns) > 0) stop("missing columns in", input_file, ": ", str_c(missing_columns, collapse = ", "))
   samples <- sort(unique(copy_number$sample))
-} else if (is(copy_number, "QDNAseqCopyNumbers")) {
-  if (!requireNamespace("Biobase", quietly = TRUE)) stop("Biobase package needs to be installed")
+} else if (class(copy_number) == "QDNAseqCopyNumbers") {
+  if (!requireNamespace("QDNAseq", quietly = TRUE)) stop("QDNAseq package needs to be installed")
   samples <- sort(Biobase::sampleNames(copy_number))
 } else {
   stop(input_file, " should contain either a data frame or a QDNAseqCopyNumbers object")

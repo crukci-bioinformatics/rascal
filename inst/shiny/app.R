@@ -481,14 +481,15 @@ server <- function(input, output, session) {
     progress$set(value = 0.4, message = "Checking copy number data")
 
     # check contents are as expected and obtain sample names
-    if (is.data.frame(copy_number_data)) {
+    # if (is.data.frame(copy_number_data)) {
+    if (any(class(copy_number_data) == "data.frame")) {
 
       expected_columns <- c("sample", "chromosome", "start", "end", "copy_number", "segmented")
       required_columns <- c("chromosome", "start", "end", "segmented")
 
       missing_columns <- setdiff(required_columns, colnames(copy_number_data))
       if (length(missing_columns) > 0) {
-        showModal(modalDialog(title = "Erorr", strong(file$name), "is missing the following columns:", str_c(missing_columns, collapse = ", ")))
+        showModal(modalDialog(title = "Error", strong(file$name), "is missing the following columns:", str_c(missing_columns, collapse = ", ")))
         return(NULL)
       }
 
@@ -541,9 +542,9 @@ server <- function(input, output, session) {
       samples <- sort(unique(copy_number_data$sample))
       chromosomes <- levels(copy_number_data$chromosome)
 
-    } else if (is(copy_number_data, "QDNAseqCopyNumbers")) {
-      if (!requireNamespace(package = "Biobase", quietly = TRUE)) {
-        showModal(modalDialog(title = "Error", "The Biobase package needs to be installed in order to load a QDNAseqCopyNumbers object"))
+    } else if (class(copy_number_data) == "QDNAseqCopyNumbers") {
+      if (!requireNamespace(package = "QDNAseq", quietly = TRUE)) {
+        showModal(modalDialog(title = "Error", "The QDNAseq package needs to be installed in order to load a QDNAseqCopyNumbers object"))
         return(NULL)
       }
 
@@ -551,7 +552,7 @@ server <- function(input, output, session) {
       required_assays <- c("copynumber", "segmented")
       missing_assays <- setdiff(required_assays, assays)
       if (length(missing_assays) > 0) {
-        showModal(modalDialog(title = "Erorr", strong(file$name), "is missing the following assay data elements:", str_c(missing_assays, collapse = ", ")))
+        showModal(modalDialog(title = "Error", strong(file$name), "is missing the following assay data elements:", str_c(missing_assays, collapse = ", ")))
         return(NULL)
       }
 
