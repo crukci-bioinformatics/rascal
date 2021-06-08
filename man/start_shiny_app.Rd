@@ -4,10 +4,13 @@
 \alias{start_shiny_app}
 \title{Shiny app for absolute copy number scaling}
 \usage{
-start_shiny_app(load_sample_data = FALSE)
+start_shiny_app(load_sample_data = TRUE, launch_browser = TRUE)
 }
 \arguments{
 \item{load_sample_data}{load a sample data set on starting the Shiny app.}
+
+\item{launch_browser}{launch the application in a web browser on starting the
+Shiny app.}
 }
 \value{
 opens the Shiny app in a web browser.
