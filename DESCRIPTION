@@ -23,6 +23,7 @@ Imports:
   colourpicker,
   DT
 Suggests:
+  optparse,
   Biobase,
   QDNAseq
 RoxygenNote: 7.1.1
