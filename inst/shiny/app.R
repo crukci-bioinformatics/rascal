@@ -91,6 +91,7 @@ ui <- fluidPage(
             "chromosome_copy_number_plot",
             hover = hoverOpts(id = "chromosome_copy_number_plot_hover", delay = 50, delayType = "throttle"),
             brush = "chromosome_copy_number_plot_brush",
+            dblclick = "chromosome_copy_number_plot_dblclick",
             height = "350px"
           )
         )
@@ -269,6 +270,8 @@ ui <- fluidPage(
       fluidRow(
         column(
           width = 8,
+          h4("User guide"),
+          hr(),
           h4("Main page"),
           p(),
           "Upload a tab-delimited, CSV or R data object file (.rds) containing a copy number table (or data frame in the case of an .rds file) by clicking the", strong("Browse"), "button on the main page.",
@@ -294,7 +297,7 @@ ui <- fluidPage(
           "Select a sample to view from the drop-down list.",
           p(),
           "Click on a chromosome in the whole genome copy number plot (left-hand side) to display the copy number for that chromosome on the right-hand side.",
-          "Zoom in to a specific region on a chromosome by clicking and dragging to select the region in the chromosome copy number plot.",
+          "Zoom in to a specific region on a chromosome by clicking and dragging to select the region in the chromosome copy number plot; double-click to zoom out again and view the whole chromosome.",
           p(),
           "Hover over a location to display the copy number, log2 ratio, fitted absolute copy number and tumour DNA fraction at this locus.",
           p(),
@@ -318,13 +321,13 @@ ui <- fluidPage(
           "Click on the", strong("Restore"), "button to select the ploidy and cellularity currently stored in the cache.",
           p(),
           "The copy number plots can be saved as PDF image files using the", strong("PDF"), "buttons.",
-          div(style = "margin-top: 20px;"),
+          hr(),
           h4("Ploidy/cellularity cache page"),
           p(),
           "The cached ploidies and cellularities for each sample are displayed on the", strong(em("Ploidy/cellularity cache")), "page.",
           "Cached ploidies and cellularities can be saved as a CSV file by clicking on the", strong("Save"), "button.",
           "Previously saved (or otherwise determined) ploidies and cellularities can be loaded from a tab-delimited or CSV file by clicking the", strong("Browse"), "button.",
-          div(style = "margin-top: 20px;"),
+          hr(),
           h4("Genes page"),
           p(),
           "A set of genes and their locations can be loaded on the", strong(em("Genes")), "page.",
@@ -333,7 +336,7 @@ ui <- fluidPage(
           p(),
           "Selecting a gene from the table on this page or in the drop-down on the main page will display the copy number plot for the chromosome on which the gene is located.",
           "The tumour fraction for the selected gene will also be displayed alongside each of the best fit solutions to help in deciding which solution is most consistent with other supporting data, e.g. allele fraction for a homozygous variant in that gene from digital PCR or amplicon sequencing. However, this is only the case where there is a single absolute copy number fitted across the entire length of the gene.",
-          div(style = "margin-top: 20px;"),
+          hr(),
           h4("Settings page"),
           p(),
           "Various display settings can be adjusted on the", strong(em("Settings")), "page."
@@ -343,6 +346,8 @@ ui <- fluidPage(
     tabPanel(
       title = "Settings",
       fluidRow(
+        h4("Settings"),
+        hr(),
         column(
           width = 3,
           h4("Copy number plots"),
@@ -1185,7 +1190,7 @@ server <- function(input, output, session) {
 
   # zoom in on selected region in the chromosome copy number plot
   observe({
-    event = input$chromosome_copy_number_plot_brush
+    event <- input$chromosome_copy_number_plot_brush
     if (!is.null(event)) {
       chromosome <- isolate(reactive_values$location$chromosome)
       start <- isolate(reactive_values$location$start)
@@ -1194,6 +1199,15 @@ server <- function(input, output, session) {
         reactive_values$location <- list(chromosome = chromosome, start = event$xmin, end = event$xmax)
         session$resetBrush("chromosome_copy_number_plot_brush")
       }
+    }
+  })
+
+  # reset view to whole of selected chromosome on double click
+  observe({
+    event <- input$chromosome_copy_number_plot_dblclick
+    if (!is.null(event)) {
+      chromosome <- isolate(reactive_values$location$chromosome)
+      reactive_values$location <- list(chromosome = chromosome, start = NULL, end = NULL)
     }
   })
 
