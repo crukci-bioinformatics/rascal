@@ -62,7 +62,7 @@ RUN R -e 'BiocManager::install("QDNAseq")'
 
 # install rascal package
 ARG RASCAL_VERSION=0.6.0
-COPY rascal_${RASCAL_VERSION}.tgz /opt
+RUN curl -L -o /opt/rascal_${RASCAL_VERSION}.tgz https://github.com/crukci-bioinformatics/rascal/releases/download/${RASCAL_VERSION}/rascal_${RASCAL_VERSION}.tgz
 RUN R CMD INSTALL /opt/rascal_${RASCAL_VERSION}.tgz
 
 # extract rascal Shiny app and create link in shiny server deployment directory
