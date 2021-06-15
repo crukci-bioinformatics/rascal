@@ -10,7 +10,7 @@ option_list <- list(
               help = "Tab-delmited output file"),
 
   make_option(c("-s", "--sample"), dest = "sample",
-              help = "Name of sample to extract copy number data for (all samples if unset)"),
+              help = "Name of sample to perform copy number fitting on (all samples if unset)"),
 
   make_option(c("--min-ploidy"), dest = "min_ploidy", default = 1.25,
               help = "The minimum ploidy to consider (default: %default)"),
@@ -84,7 +84,7 @@ if (str_detect(input_file, "\\.rds$")) {
 
 # check contents are correct and obtain sample names
 if (any(class(copy_number) == "data.frame")) {
-  required_columns <- c("chromosome", "start", "end", "segmented")
+  required_columns <- c("sample", "chromosome", "start", "end", "segmented")
   missing_columns <- setdiff(required_columns, colnames(copy_number))
   if (length(missing_columns) > 0) stop("missing columns in", input_file, ": ", str_c(missing_columns, collapse = ", "))
   samples <- sort(unique(copy_number$sample))
