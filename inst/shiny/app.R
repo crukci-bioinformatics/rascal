@@ -1,16 +1,14 @@
-suppressPackageStartupMessages({
-  library(shiny)
-  library(shinyjs)
-  library(colourpicker)
-  library(tibble)
-  library(readr)
-  library(tidyr)
-  library(dplyr)
-  library(stringr)
-  library(ggplot2)
-  library(DT)
-  library(rascal)
-})
+library(shiny)
+library(shinyjs)
+library(colourpicker)
+library(tibble)
+library(readr)
+library(tidyr)
+library(dplyr)
+library(stringr)
+library(ggplot2)
+library(DT)
+library(rascal)
 
 options(shiny.maxRequestSize = 1024 * 1024 * 1024)
 options(scipen = 999)
@@ -765,7 +763,7 @@ server <- function(input, output, session) {
     selected_sample <- reactive_values$sample
     if (is.null(selected_sample)) return(NULL)
 
-    if (is(copy_number_data, "QDNAseqCopyNumbers")) {
+    if (class(copy_number_data) == "QDNAseqCopyNumbers") {
       copy_number <- copy_number_data[,selected_sample]
       copy_number_values <- Biobase::assayDataElement(copy_number, "copynumber")[,1]
       segmented_values <- Biobase::assayDataElement(copy_number, "segmented")[,1]
