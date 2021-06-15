@@ -250,7 +250,7 @@ ui <- fluidPage(
           "The approach used in this application is based on concepts introduced in the",
           tags$a(href = "https://bioconductor.org/packages/release/bioc/html/ACE.html", target = "_blank", "ACE"),
           "package developed by Bauke Ylstra's group at Amsterdam UMC.",
-          "The mathematics underpinning this approach assume a single dominant clone; estimating ploidy and cellularity for heterogenous tumour samples may prove difficult with this method.",
+          "The mathematics underpinning this approach assume a single dominant clone; estimating ploidy and cellularity for heterogeneous tumour samples may prove difficult with this method.",
           p(),
           "This application was created using the R Shiny web application framework. It was developed by",
           tags$a(href = "https://www.cruk.cam.ac.uk/author/matthew-eldridge", target = "_blank", "Matt Eldridge"),
