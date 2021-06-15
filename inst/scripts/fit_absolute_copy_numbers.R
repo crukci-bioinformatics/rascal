@@ -53,7 +53,7 @@ library(rascal)
 # function for extracting the copy number for a given sample
 # can handle QDNAseqCopyNumbers object or a copy number data frame
 copy_number_for_sample <- function(copy_number, sample) {
-  if (class(copy_number) == "QDNAseqCopyNumbers") {
+  if (any(class(copy_number) == "QDNAseqCopyNumbers")) {
     copy_number <- copy_number[,sample]
     copy_number_values <- Biobase::assayDataElement(copy_number, "copynumber")[,1]
     segmented_values <- Biobase::assayDataElement(copy_number, "segmented")[,1]
@@ -88,7 +88,7 @@ if (any(class(copy_number) == "data.frame")) {
   missing_columns <- setdiff(required_columns, colnames(copy_number))
   if (length(missing_columns) > 0) stop("missing columns in", input_file, ": ", str_c(missing_columns, collapse = ", "))
   samples <- sort(unique(copy_number$sample))
-} else if (class(copy_number) == "QDNAseqCopyNumbers") {
+} else if (any(class(copy_number) == "QDNAseqCopyNumbers")) {
   if (!requireNamespace("QDNAseq", quietly = TRUE)) stop("QDNAseq package needs to be installed")
   samples <- sort(Biobase::sampleNames(copy_number))
 } else {

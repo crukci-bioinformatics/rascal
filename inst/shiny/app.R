@@ -545,7 +545,7 @@ server <- function(input, output, session) {
       samples <- sort(unique(copy_number_data$sample))
       chromosomes <- levels(copy_number_data$chromosome)
 
-    } else if (class(copy_number_data) == "QDNAseqCopyNumbers") {
+    } else if (any(class(copy_number_data) == "QDNAseqCopyNumbers")) {
       if (!requireNamespace(package = "QDNAseq", quietly = TRUE)) {
         showModal(modalDialog(title = "Error", "The QDNAseq package needs to be installed in order to load a QDNAseqCopyNumbers object"))
         return(NULL)
@@ -763,7 +763,7 @@ server <- function(input, output, session) {
     selected_sample <- reactive_values$sample
     if (is.null(selected_sample)) return(NULL)
 
-    if (class(copy_number_data) == "QDNAseqCopyNumbers") {
+    if (any(class(copy_number_data) == "QDNAseqCopyNumbers")) {
       copy_number <- copy_number_data[,selected_sample]
       copy_number_values <- Biobase::assayDataElement(copy_number, "copynumber")[,1]
       segmented_values <- Biobase::assayDataElement(copy_number, "segmented")[,1]
