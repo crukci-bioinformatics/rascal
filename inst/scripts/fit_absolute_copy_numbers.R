@@ -1,3 +1,5 @@
+#!/usr/bin/env Rscript
+
 library(optparse)
 
 option_list <- list(
