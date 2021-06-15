@@ -43,19 +43,17 @@ max_cellularity <- opt$max_cellularity
 if (is.null(input_file)) stop("Copy number RDS/CSV/TSV file must be specified")
 if (is.null(output_file)) stop("Output file must be specified")
 
-suppressPackageStartupMessages({
-  library(tibble)
-  library(readr)
-  library(tidyr)
-  library(dplyr)
-  library(stringr)
-  library(rascal)
-})
+library(tibble)
+library(readr)
+library(tidyr)
+library(dplyr)
+library(stringr)
+library(rascal)
 
 # function for extracting the copy number for a given sample
 # can handle QDNAseqCopyNumbers object or a copy number data frame
 copy_number_for_sample <- function(copy_number, sample) {
-  if (is(copy_number, "QDNAseqCopyNumbers")) {
+  if (class(copy_number) == "QDNAseqCopyNumbers") {
     copy_number <- copy_number[,sample]
     copy_number_values <- Biobase::assayDataElement(copy_number, "copynumber")[,1]
     segmented_values <- Biobase::assayDataElement(copy_number, "segmented")[,1]
