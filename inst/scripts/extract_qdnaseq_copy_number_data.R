@@ -39,13 +39,10 @@ digits <- opt$digits
 if (is.null(input_file)) stop("QDNAseqCopyNumbers RDS file must be specified")
 if (is.null(output_file)) stop("Output file must be specified")
 
-suppressPackageStartupMessages({
-  library(tibble)
-  library(readr)
-  library(dplyr)
-  library(Biobase)
-  library(QDNAseq)
-})
+library(tibble)
+library(readr)
+library(dplyr)
+library(Biobase)
 
 copy_number <- readRDS(input_file)
 if (!is(copy_number, "QDNAseqCopyNumbers")) stop(input_file, "does not contain a QDNAseqCopyNumbers object")
