@@ -57,8 +57,12 @@ ui <- fluidPage(
       ),
       fluidRow(
         column(
-          width = 5,
+          width = 4,
           h5(htmlOutput("genome_copy_number_plot_label"))
+        ),
+        column(
+          width = 1,
+          downloadButton("save_copy_number_data", label = "Save")
         ),
         column(
           width = 1,
@@ -317,6 +321,9 @@ ui <- fluidPage(
           p(),
           "The selected ploidy and cellularity can be stored in a cache by clicking on the", strong("Store"), "button.",
           "Click on the", strong("Restore"), "button to select the ploidy and cellularity currently stored in the cache.",
+          p(),
+          "The segmented copy number data can be saved for the current sample using the ", strong("Save"), " button.",
+          "These include both relative copy numbers and scaled, absolute values for the currently selected ploidy and cellularity.",
           p(),
           "The copy number plots can be saved as PDF image files using the", strong("PDF"), "buttons.",
           hr(),
@@ -943,8 +950,63 @@ server <- function(input, output, session) {
   observe({
     copy_number <- copy_number_for_selected_sample()
     plot <- create_genome_copy_number_plot()
+    toggleState("save_copy_number_data", !is.null(copy_number) && !is.null(plot))
     toggleState("save_genome_copy_plot", !is.null(copy_number) && !is.null(plot))
   })
+
+  # function used for saving segmented copy number data for the current sample
+  # including the scaled, absolute copy number values for the selected ploidy
+  # and cellularity
+  save_segmented_copy_number_data <- reactive({
+    copy_number_data <- segments_for_selected_sample()
+
+    if (is.null(copy_number_data)) {
+      copy_number_data <- tibble(
+        chromosome = character(),
+        start = integer(),
+        end = integer(),
+        bins = integer(),
+        log2_ratio = double(),
+        relative_copy_number = double()
+      )
+    } else {
+      copy_number_data <- copy_number_data %>%
+        select(
+          chromosome,
+          start,
+          end,
+          bins = bin_count,
+          log2_ratio = log2ratio,
+          relative_copy_number = copy_number
+        )
+    }
+
+    ploidy <- reactive_values$ploidy
+    cellularity <- reactive_values$cellularity
+
+    copy_number_data <- copy_number_data %>%
+      mutate(absolute_copy_number = relative_to_absolute_copy_number(relative_copy_number, ploidy, cellularity)) %>%
+      mutate(across(c(log2_ratio, relative_copy_number, absolute_copy_number), round, digits = 3))
+
+    filename <- reactive_values$sample
+    if (!is.na(ploidy) && !is.na(cellularity)) {
+      filename <- str_c(filename, ".ploidy", ploidy, ".cellularity", cellularity)
+    }
+    filename <- str_c(filename, ".csv")
+
+    list(filename = filename, data = copy_number_data)
+  })
+
+  # save scaled segmented copy number data
+  output$save_copy_number_data <- downloadHandler(
+    filename = function() { save_segmented_copy_number_data()$filename },
+    content = function(file) {
+      write_csv(
+        save_segmented_copy_number_data()$data,
+        file
+      )
+    }
+  )
 
   # save genome copy number plot as PDF file
   output$save_genome_copy_plot <- downloadHandler(
