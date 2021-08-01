@@ -383,7 +383,7 @@ chromosome_copy_number_plot <- function(copy_number,
     geom_point(data = copy_number, mapping = aes(x = position, y = copy_number), size = point_size, colour = point_colour, alpha = point_alpha) +
     geom_line(data = segment_lines, mapping = aes(x = position, y = copy_number, group = segment_number), colour = segment_colour, alpha = segment_alpha, size = segment_line_size) +
     scale_x_continuous(limits = limits, expand = expansion(mult = 0), labels = scales::unit_format(scale = position_scale, big.mark = ",", unit = "", sep = "")) +
-    scale_y_continuous(limits = c(min_copy_number, max_copy_number), expand = expansion(mult = 0)) +
+    scale_y_continuous(limits = c(min_copy_number, max_copy_number), breaks = copy_number_breaks, expand = expansion(mult = 0)) +
     labs(x = xlabel, y = ylabel) +
     theme_bw() +
     theme(
