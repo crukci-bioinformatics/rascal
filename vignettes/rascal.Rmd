@@ -56,10 +56,10 @@ heterogeneity at the level of copy number may prove difficult with this method.
 
 In addition to loading the _rascal_ package, the following walkthrough makes use
 of some functions for working with data frames provided by the
-[dplyr])https://dplyr.tidyverse.org) and
+[dplyr](https://dplyr.tidyverse.org) and
 [ggplot2](https://ggplot2.tidyverse.org).
 
-```{r}
+```{r message = FALSE}
 library(rascal)
 library(dplyr)
 library(ggplot2)
@@ -324,14 +324,17 @@ copy_number_density_plot(copy_number$segmented, copy_number_steps,
                          min_copy_number = 0.3, max_copy_number = 1.7)
 ```
 
-The peak in the density plot at a relative copy number of 1 corresponds to the
-ploidy of the tumour sample, i.e. ploidy 3 in this case. The spacing between
-adjacent maxima is fairly consistent for the four or five main peaks which
-provides reassurance that these data fit the basic mathematical framework.
-Samples with lower cellularity, i.e. less pure and more contaminated with normal
-cells, display an average of the tumour copy number profile with a normal
-diploid profile (single peak at relative copy number 1 corresponding to 2 DNA
-copies) and will have more tightly spaced peaks.
+The relative copy number of 1 corresponds to the ploidy of the tumour sample.
+In this case a ploidy of 3 doesn't quite match up with the closest peak
+suggesting that the actual ploidy is slightly below 3 with the 5 main peaks
+corresponding to absolute copy numbers 1, 2, 3, 4, and 5.
+
+The spacing between adjacent maxima is fairly consistent for the four or five
+main peaks which provides reassurance that these data fit the basic mathematical
+framework. Samples with lower cellularity, i.e. less pure and more contaminated
+with normal cells, display an average of the tumour copy number profile with a
+normal diploid profile (single peak at relative copy number 1 corresponding to 2
+DNA copies) and will have more tightly spaced peaks.
 
 A potential strategy for determining the ploidy and cellularity that best fit
 the data would be to use the average spacing between copy number maxima on the
@@ -471,12 +474,40 @@ TP53 allele fraction for each of the 3 competing solutions.
 ```{r}
 solutions %>%
   select(ploidy, cellularity) %>%
-  mutate(tp53_absolute_copy_number = relative_to_absolute_copy_number(0.8317853, ploidy, cellularity)) %>%
+  mutate(tp53_absolute_copy_number = relative_to_absolute_copy_number(0.832, ploidy, cellularity)) %>%
   mutate(tp53_tumour_fraction = tumour_fraction(tp53_absolute_copy_number, cellularity))
 ```
 
 The solution closest that gives a TP53 tumour fraction closest to the observed
 allele fraction is the one with ploidy 2.87 and cellularity 0.58.
+
+```{r}
+ploidy <- 2.87
+cellularity <- 0.58
+absolute_copy_number <- mutate(copy_number,
+                               across(c(copy_number, segmented),
+                               relative_to_absolute_copy_number, ploidy, cellularity))
+absolute_segments <- copy_number_segments(absolute_copy_number)
+```
+
+```{r fig.width = 6}
+copy_number_steps <- tibble(absolute_copy_number = 1:5)
+copy_number_steps <- mutate(copy_number_steps, copy_number = absolute_to_relative_copy_number(absolute_copy_number, ploidy, cellularity))
+copy_number_density_plot(copy_number$segmented, copy_number_steps,
+                         min_copy_number = 0.3, max_copy_number = 1.7)
+```
+
+```{r fig.width = 7}
+chromosomes <- chromosome_offsets(absolute_copy_number)
+genomic_copy_number <- convert_to_genomic_coordinates(absolute_copy_number, "position", chromosomes)
+genomic_segments <- convert_to_genomic_coordinates(absolute_segments, c("start", "end"), chromosomes)
+genome_copy_number_plot(genomic_copy_number, genomic_segments, chromosomes,
+                        min_copy_number = 0, max_copy_number = 7,
+                        copy_number_breaks = 0:7,
+                        point_colour = "grey40",
+                        ylabel = "absolute copy number")
+
+```
 
 ## Batch fitting
 
