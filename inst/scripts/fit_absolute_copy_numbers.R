@@ -7,7 +7,7 @@ option_list <- list(
               help = "RDS, CSV or tab-delimited file containing copy number table with sample, chromosome, start, end copy_number and segmented columns or RDS file containing QDNAseqCopyNumbers object"),
 
   make_option(c("-o", "--output-file"), dest = "output_file",
-              help = "Tab-delmited output file"),
+              help = "Comma-separated value (CSV) output file"),
 
   make_option(c("-s", "--sample"), dest = "sample",
               help = "Name of sample to perform copy number fitting on (all samples if unset)"),
@@ -137,7 +137,7 @@ for (sample_index in 1:number_of_samples) {
   solutions %>%
     mutate_at(vars(ploidy, cellularity), round, digits = 2) %>%
     mutate_at(vars(distance), round, digits = 3) %>%
-    write_tsv(output_file, append = append)
+    write_csv(output_file, append = append)
 
   append <- TRUE
 

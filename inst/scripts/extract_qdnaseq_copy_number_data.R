@@ -7,7 +7,7 @@ option_list <- list(
               help = "RDS file containing QDNAseqCopyNumbers object"),
 
   make_option(c("-o", "--output"), dest = "output_file",
-              help = "Tab-delmited output file"),
+              help = "Comma-separated value (CSV) output file"),
 
   make_option(c("-a", "--append"), dest = "append", action = "store_true", default = FALSE,
               help="Append to existing output file"),
@@ -91,7 +91,7 @@ for (sample_index in 1:number_of_samples) {
 
   print(summary(copy_number_for_sample$segmented))
 
-  write_tsv(copy_number_for_sample, output_file, append = append)
+  write_csv(copy_number_for_sample, output_file, append = append)
 
   append <- TRUE
 }
