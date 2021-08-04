@@ -61,7 +61,7 @@ RUN R -e 'BiocManager::install("Biobase")'
 RUN R -e 'BiocManager::install("QDNAseq")'
 
 # install rascal package
-ARG RASCAL_VERSION=0.6.0
+ARG RASCAL_VERSION=0.7.0
 RUN curl -L -o /opt/rascal_${RASCAL_VERSION}.tgz https://github.com/crukci-bioinformatics/rascal/releases/download/${RASCAL_VERSION}/rascal_${RASCAL_VERSION}.tgz
 RUN R CMD INSTALL /opt/rascal_${RASCAL_VERSION}.tgz
 
