@@ -7,7 +7,7 @@
 convert_to_genomic_coordinates(copy_number, column_names, offsets = NULL)
 }
 \arguments{
-\item{copy_number}{a data frame containing \code{chromosome} and one of more
+\item{copy_number}{a data frame containing \code{chromosome} and one or more
 coordinate columns, e.g. \code{position}, \code{start} or \code{end}.}
 
 \item{column_names}{a vector of column names to convert to genomic

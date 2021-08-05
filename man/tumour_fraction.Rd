@@ -8,7 +8,7 @@ cellularity}
 tumour_fraction(absolute_copy_number, cellularity)
 }
 \arguments{
-\item{absolute_copy_number}{the absolute copy number (a numeric value).}
+\item{absolute_copy_number}{the absolute copy number(s) (a numeric value).}
 
 \item{cellularity}{the cellularity, i.e. the fraction of cells that are from
 the tumour.}
@@ -17,7 +17,7 @@ the tumour.}
 the fraction of DNA that originates from tumour cells.
 }
 \description{
-Compute the tumour DNA fraction for the given absolute copy number in the
+Compute the tumour DNA fraction for the given absolute copy number(s) in the
 tumour and the cellularity, i.e. the fraction of all cells that are tumour
 cells.
 }
