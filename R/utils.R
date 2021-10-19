@@ -224,22 +224,20 @@ copy_number_segments <- function(copy_number) {
     )
 }
 
-#' Obtain chromosome lengths and offsets
+#' Obtain chromosome lengths
 #'
-#' Obtains chromosome lengths and offset for the given copy number data.
-#'
-#' Offsets are used to convert chromosome coordinates into genomic coordinates.
+#' Obtains chromosome lengths based on the bin coordinates within the given copy
+#' number data. Used in the genome copy number plot.
 #'
 #' @param copy_number a data frame containing \code{chromosome} and \code{end}
 #' columns.
-#' @return a data frame containing \code{chromosome}, \code{length} and
-#' \code{offset} columns.
+#' @return a data frame containing \code{chromosome} and \code{length} columns.
 #' @examples
 #' data(copy_number)
-#' chromosome_offsets(copy_number)
+#' chromosome_lengths(copy_number)
 #' @import dplyr
 #' @export
-chromosome_offsets <- function(copy_number) {
+chromosome_lengths <- function(copy_number) {
 
   stopifnot(is.data.frame(copy_number))
   stopifnot("chromosome" %in% names(copy_number))
@@ -247,50 +245,5 @@ chromosome_offsets <- function(copy_number) {
 
   copy_number %>%
     group_by(chromosome) %>%
-    summarize(length = as.numeric(max(end))) %>%
-    mutate(offset = lag(cumsum(length), default = 0))
-}
-
-#' Convert chromosome coordinates to genomic coordinates
-#'
-#' Converts the specified columns from chromosome coordinates to genomic
-#' coordinates.
-#'
-#' Genomic coordinates are obtained by adding the chromosome coordinate to the
-#' sum of the lengths of all preceding chromosomes.
-#'
-#' @param copy_number a data frame containing \code{chromosome} and one or more
-#' coordinate columns, e.g. \code{position}, \code{start} or \code{end}.
-#' @param column_names a vector of column names to convert to genomic
-#' coordinates.
-#' @param offsets a data frame containing \code{chromosome} and \code{offset}
-#' columns (optional, if not given then offsets will be calculated for the
-#' given copy number).
-#' @examples
-#' data(copy_number)
-#' copy_number <- copy_number[copy_number$sample == "X17222", ]
-#' copy_number <- convert_to_genomic_coordinates(copy_number, c("start", "end"))
-#' @import dplyr
-#' @export
-convert_to_genomic_coordinates <- function(copy_number,
-                                           column_names,
-                                           offsets = NULL) {
-  stopifnot(is.data.frame(copy_number))
-  stopifnot("chromosome" %in% names(copy_number))
-
-  stopifnot(is.character(column_names), length(column_names) > 0)
-  stopifnot(all(column_names %in% names(copy_number)))
-
-  if (is.null(offsets)) {
-    offsets <- chromosome_offsets(copy_number)
-  } else {
-    stopifnot(is.data.frame(offsets))
-    stopifnot("chromosome" %in% names(offsets))
-    stopifnot("offset" %in% names(offsets), is.numeric(offsets$offset))
-  }
-
-  copy_number %>%
-    left_join(select(offsets, chromosome, offset), by = "chromosome") %>%
-    mutate_at(vars(column_names), ~ . + offset) %>%
-    select(-offset)
+    summarize(length = as.numeric(max(end)))
 }
