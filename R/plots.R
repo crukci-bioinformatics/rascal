@@ -2,20 +2,21 @@
 #'
 #' Whole genome copy number plot with partitioning lines between chromosomes.
 #'
-#' Note that \code{position}, \code{start} and \code{end} coordinates are at
-#' a genome level, equal to the chromosome coordinate plus the cumulative sum
-#' of the lengths of all preceding chromosomes.
-#'
 #' \code{copy_number} values can be on the relative or absolute scales or can
 #' be log2 ratios but the same scale should be used consistently in each of the
-#' data frames.
+#' \code{copy_number}, \code{segments} and \code{copy_number_steps} data frames.
 #'
-#' @param copy_number a data frame containing \code{position} and
-#' \code{copy_number} columns with a row for each copy number bin.
-#' @param segments a data frame containing \code{start}, \code{end}
-#' and \code{copy_number} columns.
-#' @param chromosomes a data frame containing \code{chromosome}, \code{length}
-#' and \code{offset} columns.
+#' @param copy_number a data frame containing \code{chromosome}, \code{start},
+#' \code{end} and \code{copy_number} columns where there is a row for each copy
+#' number bin; may optionally contain a \code{sample} column if the data frame
+#' contains data for multiple samples.
+#' @param segments a data frame containing \code{chromosome}, \code{start},
+#' \code{end} and \code{copy_number} columns; may optionally contain a
+#' \code{sample} column if the data frame contains data for multiple samples.
+#' @param sample the sample (required if the \code{copy_number} and
+#' \code{segments} contain data for multiple samples)
+#' @param chromosome_lengths a data frame containing \code{chromosome} and
+#' \code{length} columns (optional).
 #' @param copy_number_steps a data frame containing \code{absolute_copy_number}
 #' and \code{copy_number} columns.
 #' @param max_points_to_display maximum number of copy number points to display
@@ -39,53 +40,56 @@
 #' @examples
 #' data(copy_number)
 #'
-#' copy_number <- copy_number[copy_number$sample == "X17222", ]
-#' copy_number$position <- round((copy_number$start + copy_number$end) / 2)
-#'
 #' segments <- copy_number_segments(copy_number)
 #'
-#' chromosomes <- chromosome_offsets(copy_number)
-#'
-#' # convert to genomic coordinates
-#' genomic_copy_number <- convert_to_genomic_coordinates(copy_number, "position", chromosomes)
-#' genomic_segments <- convert_to_genomic_coordinates(segments, c("start", "end"), chromosomes)
-#'
-#' genome_copy_number_plot(genomic_copy_number, genomic_segments, chromosomes, ylabel = "relative copy number")
+#' genome_copy_number_plot(copy_number, segments, sample = "X17222", ylabel = "relative copy number")
 #'
 #' absolute_copy_numbers <- 0:8
 #' relative_copy_numbers <- absolute_to_relative_copy_number(absolute_copy_numbers, ploidy = 4.01, cellularity = 0.81)
 #' copy_number_steps <- data.frame(absolute_copy_number = absolute_copy_numbers, copy_number = relative_copy_numbers)
 #'
 #' genome_copy_number_plot(
-#'   genomic_copy_number,
-#'   genomic_segments,
-#'   chromosomes,
-#'   copy_number_steps,
-#'   min_copy_number = 0.25, max_copy_number = 2.5,
-#'   xlabel = NULL, ylabel = "relative copy number")
+#'   copy_number,
+#'   segments,
+#'   sample = "X17222",
+#'   copy_number_steps = copy_number_steps,
+#'   min_copy_number = 0.25,
+#'   max_copy_number = 2.5,
+#'   xlabel = NULL,
+#'   ylabel = "relative copy number")
 #'
-#' # display copy number as log2 ratios
-#' genomic_copy_number$copy_number <- log2(genomic_copy_number$copy_number)
-#' genomic_segments$copy_number <- log2(genomic_segments$copy_number)
-#' copy_number_steps$copy_number <- log2(copy_number_steps$copy_number)
+#' # filter for specific sample and convert relative copy numbers to log2 ratios
+#' log2_ratio <- copy_number[copy_number$sample == "X17222", ]
+#' log2_ratio$copy_number <- log2(log2_ratio$copy_number)
+#' log2_ratio$segmented <- log2(log2_ratio$segmented)
 #'
-#' genome_copy_number_plot(
-#'   genomic_copy_number,
-#'   genomic_segments,
-#'   chromosomes,
-#'   copy_number_steps,
-#'   min_copy_number = -2, max_copy_number = 3,
-#'   xlabel = NULL, ylabel = expression(log[2]~ratio))
+#' log2_ratio_segments <- copy_number_segments(log2_ratio)
 #'
-#' # convert to absolute copy numbers
-#' genomic_copy_number <- convert_to_genomic_coordinates(copy_number, "position", chromosomes)
-#' genomic_copy_number$copy_number <- relative_to_absolute_copy_number(genomic_copy_number$copy_number, ploidy = 4.01, cellularity = 0.81)
-#' genomic_segments <- convert_to_genomic_coordinates(segments, c("start", "end"), chromosomes)
-#' genomic_segments$copy_number <- relative_to_absolute_copy_number(genomic_segments$copy_number, ploidy = 4.01, cellularity = 0.81)
+#' log2_ratio_steps <- copy_number_steps
+#' log2_ratio_steps$copy_number <- log2(log2_ratio_steps$copy_number)
 #'
 #' genome_copy_number_plot(
-#'   genomic_copy_number, genomic_segments, chromosomes,
-#'   min_copy_number = 0, max_copy_number = 10, copy_number_breaks = 0:10,
+#'   log2_ratio,
+#'   log2_ratio_segments,
+#'   copy_number_steps = log2_ratio_steps,
+#'   min_copy_number = -2,
+#'   max_copy_number = 3,
+#'   xlabel = NULL,
+#'   ylabel = expression(log[2]~ratio))
+#'
+#' # filter for specific sample and convert relative copy numbers to absolute copy numbers
+#' absolute_copy_number <- copy_number[copy_number$sample == "X17222", ]
+#' absolute_copy_number$copy_number <- relative_to_absolute_copy_number(absolute_copy_number$copy_number, ploidy = 4.01, cellularity = 0.81)
+#' absolute_copy_number$segmented <- relative_to_absolute_copy_number(absolute_copy_number$segmented, ploidy = 4.01, cellularity = 0.81)
+#'
+#' absolute_segments <- copy_number_segments(absolute_copy_number)
+#'
+#' genome_copy_number_plot(
+#'   absolute_copy_number,
+#'   absolute_segments,
+#'   min_copy_number = 0,
+#'   max_copy_number = 10,
+#'   copy_number_breaks = 0:10,
 #'   ylabel = "absolute copy number") +
 #'   ggplot2::theme(panel.grid.major.y = ggplot2::element_line(colour = "grey60"))
 #'
@@ -93,7 +97,8 @@
 #' @export
 genome_copy_number_plot <- function(copy_number,
                                     segments,
-                                    chromosomes,
+                                    sample = NULL,
+                                    chromosome_lengths = NULL,
                                     copy_number_steps = NULL,
                                     max_points_to_display = Inf,
                                     min_copy_number = NULL, max_copy_number = NULL, copy_number_breaks = NULL,
@@ -102,17 +107,65 @@ genome_copy_number_plot <- function(copy_number,
                                     copy_number_step_colour = "blue", copy_number_step_alpha = 0.35, copy_number_step_line_size = 0.75,
                                     xlabel = "chromosome", ylabel = "copy number") {
 
-  chromosomes <- chromosomes %>%
+  stopifnot(is.data.frame(copy_number))
+  stopifnot("chromosome" %in% names(copy_number))
+  stopifnot("start" %in% names(copy_number), is.numeric(copy_number$start))
+  stopifnot("end" %in% names(copy_number), is.numeric(copy_number$end))
+  stopifnot("copy_number" %in% names(copy_number), is.numeric(copy_number$copy_number))
+
+  stopifnot(is.data.frame(segments))
+  stopifnot("chromosome" %in% names(segments))
+  stopifnot("start" %in% names(segments), is.numeric(segments$start))
+  stopifnot("end" %in% names(segments), is.numeric(segments$end))
+  stopifnot("copy_number" %in% names(segments), is.numeric(segments$copy_number))
+
+  if (is.null(chromosome_lengths)) {
+    chromosome_lengths <- chromosome_lengths(copy_number)
+  } else {
+    stopifnot(is.data.frame(chromosome_lengths))
+    stopifnot("chromosome" %in% names(chromosome_lengths))
+    stopifnot("length" %in% names(chromosome_lengths), is.numeric(chromosome_lengths$length))
+  }
+
+  # compute offsets and genome coordinates for each chromosome
+  chromosomes <- chromosome_lengths %>%
+    mutate(offset = lag(cumsum(length), default = 0)) %>%
     mutate(start = offset + 1, end = offset + length) %>%
     mutate(mid = offset + round(length / 2))
 
+  offsets <- select(chromosomes, chromosome, offset)
+
+  # filter copy number data for the specified sample
+  if (!is.null(sample)) {
+    stopifnot("sample" %in% names(copy_number))
+    stopifnot("sample" %in% names(segments))
+    selected_sample <- sample
+    copy_number <- filter(copy_number, sample == selected_sample)
+    segments <- filter(segments, sample == selected_sample)
+  }
+
+  # filter out missing and non-finite values
   copy_number <- filter(copy_number, is.finite(copy_number))
   segments <- filter(segments, is.finite(copy_number))
-  if (nrow(copy_number) == 0 && nrow(segments) == 0) return(NULL)
+
+  # compute mid-point position for the copy number bins
+  copy_number <- mutate(copy_number, position = (start + end) / 2)
+
+  # convert to genome coordinates
+  copy_number <- copy_number %>%
+    left_join(offsets, by = "chromosome") %>%
+    mutate(position = position + offset) %>%
+    select(-offset)
+
+  segments <- segments %>%
+    left_join(offsets, by = "chromosome") %>%
+    mutate_at(vars(start, end), ~ . + offset) %>%
+    select(-offset)
 
   if (is.null(min_copy_number)) {
     min_copy_number <- min(copy_number$copy_number, segments$copy_number)
   } else {
+    stopifnot(is.numeric(min_copy_number), length(min_copy_number) == 1, !is.na(min_copy_number))
     copy_number <- filter(copy_number, copy_number >= min_copy_number)
     segments <- filter(segments, copy_number >= min_copy_number)
   }
@@ -120,14 +173,14 @@ genome_copy_number_plot <- function(copy_number,
   if (is.null(max_copy_number)) {
     max_copy_number <- max(copy_number$copy_number, segments$copy_number)
   } else {
+    stopifnot(is.numeric(max_copy_number), length(max_copy_number) == 1, !is.na(max_copy_number))
     copy_number <- filter(copy_number, copy_number <= max_copy_number)
     segments <- filter(segments, copy_number <= max_copy_number)
   }
 
+  stopifnot(is.numeric(max_points_to_display), length(max_points_to_display) == 1, !is.na(max_points_to_display))
   if (max_points_to_display < nrow(copy_number))
     copy_number <- sample_n(copy_number, max_points_to_display)
-
-  if (nrow(copy_number) == 0 && nrow(segments) == 0) return(NULL)
 
   segment_lines <- segments %>%
     mutate(segment_number = row_number()) %>%
@@ -190,12 +243,17 @@ genome_copy_number_plot <- function(copy_number,
 #'
 #' \code{copy_number} values can be on the relative or absolute scales or can
 #' be log2 ratios but the same scale should be used consistently in each of the
-#' data frames.
+#' \code{copy_number}, \code{segments} and \code{copy_number_steps} data frames.
 #'
-#' @param copy_number a data frame containing \code{chromosome}, \code{position}
-#' and \code{copy_number} columns with a row for each copy number bin.
-#' @param segments a data frame containing \code{chromosome},
-#' \code{start}, \code{end} and \code{copy_number} columns.
+#' @param copy_number a data frame containing \code{chromosome}, \code{start},
+#' \code{end} and \code{copy_number} columns where there is a row for each copy
+#' number bin; may optionally contain a \code{sample} column if the data frame
+#' contains data for multiple samples.
+#' @param segments a data frame containing \code{chromosome}, \code{start},
+#' \code{end} and \code{copy_number} columns; may optionally contain a
+#' \code{sample} column if the data frame contains data for multiple samples.
+#' @param sample the sample (required if the \code{copy_number} and
+#' \code{segments} contain data for multiple samples)
 #' @param chromosome the chromosome to display.
 #' @param start the start coordinate within the specified chromosome.
 #' @param end the end coordinate within the specified chromosome.
@@ -228,8 +286,6 @@ genome_copy_number_plot <- function(copy_number,
 #' data(copy_number)
 #' data(genes)
 #'
-#' copy_number <- copy_number[copy_number$sample == "X17222", ]
-#' copy_number$position <- round((copy_number$start + copy_number$end) / 2)
 #' segments <- copy_number_segments(copy_number)
 #'
 #' absolute_copy_numbers <- 0:8
@@ -239,31 +295,37 @@ genome_copy_number_plot <- function(copy_number,
 #' chromosome_copy_number_plot(
 #'   copy_number,
 #'   segments,
+#'   sample = "X17222",
 #'   chromosome = 3,
 #'   copy_number_steps = copy_number_steps,
 #'   genes = genes,
 #'   min_copy_number = 0.25, max_copy_number = 2.5)
 #'
-#' # display copy number as log2 ratios
-#' copy_number$copy_number <- log2(copy_number$copy_number)
-#' segments$copy_number <- log2(segments$copy_number)
-#' copy_number_steps$copy_number <- log2(copy_number_steps$copy_number)
+#' # filter for specific sample and convert relative copy numbers to log2 ratios
+#' log2_ratio <- copy_number[copy_number$sample == "X17222", ]
+#' log2_ratio$copy_number <- log2(log2_ratio$copy_number)
+#'
+#' log2_ratio_segments <- copy_number_segments(log2_ratio)
+#'
+#' log2_ratio_steps <- copy_number_steps
+#' log2_ratio_steps$copy_number <- log2(log2_ratio_steps$copy_number)
 #'
 #' chromosome_copy_number_plot(
-#'   copy_number,
-#'   segments,
+#'   log2_ratio,
+#'   log2_ratio_segments,
 #'   chromosome = 17, start = 7250000, end = 7750000,
-#'   copy_number_steps = copy_number_steps,
+#'   copy_number_steps = log2_ratio_steps,
 #'   genes = genes,
 #'   min_copy_number = -2, max_copy_number = 2,
 #'   position_scale = 1,
-#'   xlabel = "position"
-#' )
+#'   xlabel = "position",
+#'   ylabel = expression(log[2]~ratio))
 #'
 #' @import tidyr dplyr ggplot2 scales
 #' @export
 chromosome_copy_number_plot <- function(copy_number,
                                         segments,
+                                        sample = NULL,
                                         chromosome, start = NULL, end = NULL,
                                         copy_number_steps = NULL,
                                         genes = NULL,
@@ -276,11 +338,42 @@ chromosome_copy_number_plot <- function(copy_number,
                                         position_scale = 1e-6,
                                         xlabel = "position (Mbp)", ylabel = "copy number") {
 
+  stopifnot(is.data.frame(copy_number))
+  stopifnot("chromosome" %in% names(copy_number))
+  stopifnot("start" %in% names(copy_number), is.numeric(copy_number$start))
+  stopifnot("end" %in% names(copy_number), is.numeric(copy_number$end))
+  stopifnot("copy_number" %in% names(copy_number), is.numeric(copy_number$copy_number))
+
+  stopifnot(is.data.frame(segments))
+  stopifnot("chromosome" %in% names(segments))
+  stopifnot("start" %in% names(segments), is.numeric(segments$start))
+  stopifnot("end" %in% names(segments), is.numeric(segments$end))
+  stopifnot("copy_number" %in% names(segments), is.numeric(segments$copy_number))
+
+  # filter copy number data for the specified sample
+  if (!is.null(sample)) {
+    stopifnot("sample" %in% names(copy_number))
+    stopifnot("sample" %in% names(segments))
+    selected_sample <- sample
+    copy_number <- filter(copy_number, sample == selected_sample)
+    segments <- filter(segments, sample == selected_sample)
+  }
+
+  # filter copy number data for specified chromosome
   selected_chromosome <- chromosome
   copy_number <- filter(copy_number, chromosome == selected_chromosome)
   segments <- filter(segments, chromosome == selected_chromosome)
 
+  # filter out missing and non-finite values
+  copy_number <- filter(copy_number, is.finite(copy_number))
+  segments <- filter(segments, is.finite(copy_number))
+
+  # compute mid-point position for the copy number bins
+  copy_number <- mutate(copy_number, position = (start + end) / 2)
+
+  # filter copy number data for specified start and end
   if (!is.null(start)) {
+    stopifnot(is.numeric(start), length(start) == 1, !is.na(start))
     selected_start <- start
     copy_number <- filter(copy_number, position >= selected_start)
     segments <- segments %>%
@@ -289,6 +382,7 @@ chromosome_copy_number_plot <- function(copy_number,
   }
 
   if (!is.null(end)) {
+    stopifnot(is.numeric(end), length(end) == 1, !is.na(end))
     selected_end <- end
     copy_number <- filter(copy_number, position <= selected_end)
     segments <- segments %>%
@@ -299,6 +393,7 @@ chromosome_copy_number_plot <- function(copy_number,
   if (is.null(min_copy_number)) {
     min_copy_number <- min(copy_number$copy_number, segments$copy_number)
   } else {
+    stopifnot(is.numeric(min_copy_number), length(min_copy_number) == 1, !is.na(min_copy_number))
     copy_number <- filter(copy_number, copy_number >= min_copy_number)
     segments <- filter(segments, copy_number >= min_copy_number)
   }
@@ -306,6 +401,7 @@ chromosome_copy_number_plot <- function(copy_number,
   if (is.null(max_copy_number)) {
     max_copy_number <- max(copy_number$copy_number, segments$copy_number)
   } else {
+    stopifnot(is.numeric(max_copy_number), length(max_copy_number) == 1, !is.na(max_copy_number))
     copy_number <- filter(copy_number, copy_number <= max_copy_number)
     segments <- filter(segments, copy_number <= max_copy_number)
   }

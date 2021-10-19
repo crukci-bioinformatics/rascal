@@ -7,7 +7,8 @@
 genome_copy_number_plot(
   copy_number,
   segments,
-  chromosomes,
+  sample = NULL,
+  chromosome_lengths = NULL,
   copy_number_steps = NULL,
   max_points_to_display = Inf,
   min_copy_number = NULL,
@@ -27,14 +28,20 @@ genome_copy_number_plot(
 )
 }
 \arguments{
-\item{copy_number}{a data frame containing \code{position} and
-\code{copy_number} columns with a row for each copy number bin.}
+\item{copy_number}{a data frame containing \code{chromosome}, \code{start},
+\code{end} and \code{copy_number} columns where there is a row for each copy
+number bin; may optionally contain a \code{sample} column if the data frame
+contains data for multiple samples.}
 
-\item{segments}{a data frame containing \code{start}, \code{end}
-and \code{copy_number} columns.}
+\item{segments}{a data frame containing \code{chromosome}, \code{start},
+\code{end} and \code{copy_number} columns; may optionally contain a
+\code{sample} column if the data frame contains data for multiple samples.}
 
-\item{chromosomes}{a data frame containing \code{chromosome}, \code{length}
-and \code{offset} columns.}
+\item{sample}{the sample (required if the \code{copy_number} and
+\code{segments} contain data for multiple samples)}
+
+\item{chromosome_lengths}{a data frame containing \code{chromosome} and
+\code{length} columns (optional).}
 
 \item{copy_number_steps}{a data frame containing \code{absolute_copy_number}
 and \code{copy_number} columns.}
@@ -77,64 +84,63 @@ a \code{ggplot} object
 Whole genome copy number plot with partitioning lines between chromosomes.
 }
 \details{
-Note that \code{position}, \code{start} and \code{end} coordinates are at
-a genome level, equal to the chromosome coordinate plus the cumulative sum
-of the lengths of all preceding chromosomes.
-
 \code{copy_number} values can be on the relative or absolute scales or can
 be log2 ratios but the same scale should be used consistently in each of the
-data frames.
+\code{copy_number}, \code{segments} and \code{copy_number_steps} data frames.
 }
 \examples{
 data(copy_number)
 
-copy_number <- copy_number[copy_number$sample == "X17222", ]
-copy_number$position <- round((copy_number$start + copy_number$end) / 2)
-
 segments <- copy_number_segments(copy_number)
 
-chromosomes <- chromosome_offsets(copy_number)
-
-# convert to genomic coordinates
-genomic_copy_number <- convert_to_genomic_coordinates(copy_number, "position", chromosomes)
-genomic_segments <- convert_to_genomic_coordinates(segments, c("start", "end"), chromosomes)
-
-genome_copy_number_plot(genomic_copy_number, genomic_segments, chromosomes, ylabel = "relative copy number")
+genome_copy_number_plot(copy_number, segments, sample = "X17222", ylabel = "relative copy number")
 
 absolute_copy_numbers <- 0:8
 relative_copy_numbers <- absolute_to_relative_copy_number(absolute_copy_numbers, ploidy = 4.01, cellularity = 0.81)
 copy_number_steps <- data.frame(absolute_copy_number = absolute_copy_numbers, copy_number = relative_copy_numbers)
 
 genome_copy_number_plot(
-  genomic_copy_number,
-  genomic_segments,
-  chromosomes,
-  copy_number_steps,
-  min_copy_number = 0.25, max_copy_number = 2.5,
-  xlabel = NULL, ylabel = "relative copy number")
+  copy_number,
+  segments,
+  sample = "X17222",
+  copy_number_steps = copy_number_steps,
+  min_copy_number = 0.25,
+  max_copy_number = 2.5,
+  xlabel = NULL,
+  ylabel = "relative copy number")
 
-# display copy number as log2 ratios
-genomic_copy_number$copy_number <- log2(genomic_copy_number$copy_number)
-genomic_segments$copy_number <- log2(genomic_segments$copy_number)
-copy_number_steps$copy_number <- log2(copy_number_steps$copy_number)
+# filter for specific sample and convert relative copy numbers to log2 ratios
+log2_ratio <- copy_number[copy_number$sample == "X17222", ]
+log2_ratio$copy_number <- log2(log2_ratio$copy_number)
+log2_ratio$segmented <- log2(log2_ratio$segmented)
 
-genome_copy_number_plot(
-  genomic_copy_number,
-  genomic_segments,
-  chromosomes,
-  copy_number_steps,
-  min_copy_number = -2, max_copy_number = 3,
-  xlabel = NULL, ylabel = expression(log[2]~ratio))
+log2_ratio_segments <- copy_number_segments(log2_ratio)
 
-# convert to absolute copy numbers
-genomic_copy_number <- convert_to_genomic_coordinates(copy_number, "position", chromosomes)
-genomic_copy_number$copy_number <- relative_to_absolute_copy_number(genomic_copy_number$copy_number, ploidy = 4.01, cellularity = 0.81)
-genomic_segments <- convert_to_genomic_coordinates(segments, c("start", "end"), chromosomes)
-genomic_segments$copy_number <- relative_to_absolute_copy_number(genomic_segments$copy_number, ploidy = 4.01, cellularity = 0.81)
+log2_ratio_steps <- copy_number_steps
+log2_ratio_steps$copy_number <- log2(log2_ratio_steps$copy_number)
 
 genome_copy_number_plot(
-  genomic_copy_number, genomic_segments, chromosomes,
-  min_copy_number = 0, max_copy_number = 10, copy_number_breaks = 0:10,
+  log2_ratio,
+  log2_ratio_segments,
+  copy_number_steps = log2_ratio_steps,
+  min_copy_number = -2,
+  max_copy_number = 3,
+  xlabel = NULL,
+  ylabel = expression(log[2]~ratio))
+
+# filter for specific sample and convert relative copy numbers to absolute copy numbers
+absolute_copy_number <- copy_number[copy_number$sample == "X17222", ]
+absolute_copy_number$copy_number <- relative_to_absolute_copy_number(absolute_copy_number$copy_number, ploidy = 4.01, cellularity = 0.81)
+absolute_copy_number$segmented <- relative_to_absolute_copy_number(absolute_copy_number$segmented, ploidy = 4.01, cellularity = 0.81)
+
+absolute_segments <- copy_number_segments(absolute_copy_number)
+
+genome_copy_number_plot(
+  absolute_copy_number,
+  absolute_segments,
+  min_copy_number = 0,
+  max_copy_number = 10,
+  copy_number_breaks = 0:10,
   ylabel = "absolute copy number") +
   ggplot2::theme(panel.grid.major.y = ggplot2::element_line(colour = "grey60"))
 

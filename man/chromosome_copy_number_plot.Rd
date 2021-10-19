@@ -7,6 +7,7 @@
 chromosome_copy_number_plot(
   copy_number,
   segments,
+  sample = NULL,
   chromosome,
   start = NULL,
   end = NULL,
@@ -33,11 +34,17 @@ chromosome_copy_number_plot(
 )
 }
 \arguments{
-\item{copy_number}{a data frame containing \code{chromosome}, \code{position}
-and \code{copy_number} columns with a row for each copy number bin.}
+\item{copy_number}{a data frame containing \code{chromosome}, \code{start},
+\code{end} and \code{copy_number} columns where there is a row for each copy
+number bin; may optionally contain a \code{sample} column if the data frame
+contains data for multiple samples.}
 
-\item{segments}{a data frame containing \code{chromosome},
-\code{start}, \code{end} and \code{copy_number} columns.}
+\item{segments}{a data frame containing \code{chromosome}, \code{start},
+\code{end} and \code{copy_number} columns; may optionally contain a
+\code{sample} column if the data frame contains data for multiple samples.}
+
+\item{sample}{the sample (required if the \code{copy_number} and
+\code{segments} contain data for multiple samples)}
 
 \item{chromosome}{the chromosome to display.}
 
@@ -97,14 +104,12 @@ Chromosome copy number plot with gene annotation.
 \details{
 \code{copy_number} values can be on the relative or absolute scales or can
 be log2 ratios but the same scale should be used consistently in each of the
-data frames.
+\code{copy_number}, \code{segments} and \code{copy_number_steps} data frames.
 }
 \examples{
 data(copy_number)
 data(genes)
 
-copy_number <- copy_number[copy_number$sample == "X17222", ]
-copy_number$position <- round((copy_number$start + copy_number$end) / 2)
 segments <- copy_number_segments(copy_number)
 
 absolute_copy_numbers <- 0:8
@@ -114,25 +119,30 @@ copy_number_steps <- data.frame(absolute_copy_number = absolute_copy_numbers, co
 chromosome_copy_number_plot(
   copy_number,
   segments,
+  sample = "X17222",
   chromosome = 3,
   copy_number_steps = copy_number_steps,
   genes = genes,
   min_copy_number = 0.25, max_copy_number = 2.5)
 
-# display copy number as log2 ratios
-copy_number$copy_number <- log2(copy_number$copy_number)
-segments$copy_number <- log2(segments$copy_number)
-copy_number_steps$copy_number <- log2(copy_number_steps$copy_number)
+# filter for specific sample and convert relative copy numbers to log2 ratios
+log2_ratio <- copy_number[copy_number$sample == "X17222", ]
+log2_ratio$copy_number <- log2(log2_ratio$copy_number)
+
+log2_ratio_segments <- copy_number_segments(log2_ratio)
+
+log2_ratio_steps <- copy_number_steps
+log2_ratio_steps$copy_number <- log2(log2_ratio_steps$copy_number)
 
 chromosome_copy_number_plot(
-  copy_number,
-  segments,
+  log2_ratio,
+  log2_ratio_segments,
   chromosome = 17, start = 7250000, end = 7750000,
-  copy_number_steps = copy_number_steps,
+  copy_number_steps = log2_ratio_steps,
   genes = genes,
   min_copy_number = -2, max_copy_number = 2,
   position_scale = 1,
-  xlabel = "position"
-)
+  xlabel = "position",
+  ylabel = expression(log[2]~ratio))
 
 }
