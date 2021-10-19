@@ -646,8 +646,8 @@ server <- function(input, output, session) {
       if (nrow(gene) == 1) {
         reactive_values$selected_gene <- selected_gene
         chromosome <- gene$chromosome
-        chromosomes <- isolate(chromosomes_for_selected_sample())
-        if (chromosome %in% chromosomes$chromosome) {
+        chromosome_lengths <- isolate(chromosome_lengths_for_selected_sample())
+        if (chromosome %in% chromosome_lengths$chromosome) {
           reactive_values$location <- list(chromosome = chromosome, start = NULL, end = NULL)
         }
       }
@@ -802,12 +802,16 @@ server <- function(input, output, session) {
       mutate(log2ratio = log2(copy_number))
   })
 
-  # chromosomes for the selected sample
-  chromosomes_for_selected_sample <- reactive({
+  # chromosome lengths for the selected sample based on the bins within the
+  # copy number data frame (uses largest bin coordinate for each chromosome)
+  chromosome_lengths_for_selected_sample <- reactive({
+
     copy_number <- copy_number_for_selected_sample()
     if (is.null(copy_number)) return(NULL)
-    chromosome_offsets(copy_number) %>%
-      mutate(start = offset + 1, end = offset + length)
+
+    copy_number %>%
+      group_by(chromosome) %>%
+      summarize(length = as.numeric(max(end)))
   })
 
   # segments for the selected sample
@@ -904,17 +908,13 @@ server <- function(input, output, session) {
     copy_number <- copy_number_for_selected_sample()
     if (is.null(copy_number)) return(NULL)
 
-    chromosomes <- chromosomes_for_selected_sample()
-
     copy_number <- copy_number %>%
-      convert_to_genomic_coordinates("position", chromosomes)
-
-    copy_number <- copy_number %>%
-      select(position, copy_number = log2ratio)
+      select(chromosome, start, end, copy_number = log2ratio)
 
     segments <- segments_for_selected_sample() %>%
-      convert_to_genomic_coordinates(c("start", "end"), chromosomes) %>%
-      select(start, end, copy_number = log2ratio)
+      select(chromosome, start, end, copy_number = log2ratio)
+
+    chromosome_lengths <- chromosome_lengths_for_selected_sample()
 
     log2ratio_range <- log2ratio_range()
 
@@ -930,8 +930,8 @@ server <- function(input, output, session) {
     genome_copy_number_plot(
       copy_number,
       segments,
-      chromosomes,
-      copy_number_steps,
+      chromosome_lengths = chromosome_lengths,
+      copy_number_steps = copy_number_steps,
       max_points_to_display = max_points_to_display(),
       min_copy_number = log2ratio_range[1], max_copy_number = log2ratio_range[2],
       point_colour = input$bin_colour,
@@ -1038,12 +1038,12 @@ server <- function(input, output, session) {
     if (is.null(copy_number) || is.null(location$chromosome)) return(NULL)
 
     copy_number <- copy_number %>%
-      select(chromosome, position, copy_number = log2ratio)
+      select(chromosome, start, end, copy_number = log2ratio)
 
     segments <- segments_for_selected_sample() %>%
       select(chromosome, start, end, copy_number = log2ratio)
 
-    chromosomes <- chromosomes_for_selected_sample()
+    chromosome_lengths <- chromosome_lengths_for_selected_sample()
 
     log2ratio_range <- log2ratio_range()
 
@@ -1061,7 +1061,7 @@ server <- function(input, output, session) {
     if (is.null(xmin)) xmin <- 1
     xmax <- location$end
     if (is.null(xmax)) {
-      xmax <- chromosomes %>%
+      xmax <- chromosome_lengths %>%
         filter(chromosome == location$chromosome) %>%
         pull(length)
     }
@@ -1077,7 +1077,7 @@ server <- function(input, output, session) {
       chromosome = location$chromosome,
       start = location$start,
       end = location$end,
-      copy_number_steps,
+      copy_number_steps = copy_number_steps,
       genes = reactive_values$genes,
       max_points_to_display = max_points_to_display(),
       min_copy_number = log2ratio_range[1], max_copy_number = log2ratio_range[2],
@@ -1163,13 +1163,22 @@ server <- function(input, output, session) {
     select(segments, chromosome, start, end, copy_number, log2ratio)
   }
 
+  # compute chromosome offsets used in genome copy number plot
+  chromosome_offsets <- function(chromosome_lengths) {
+    chromosome_lengths %>%
+      mutate(offset = lag(cumsum(length), default = 0)) %>%
+      mutate(start = offset + 1, end = offset + length)
+  }
+
   # get the copy number bin corresponding to the given genomic coordinate
   get_copy_number_at_genomic_position <- function(position) {
 
-    chromosomes <- chromosomes_for_selected_sample()
-    if (is.null(chromosomes)) return(NULL)
+    chromosome_lengths <- chromosome_lengths_for_selected_sample()
+    if (is.null(chromosome_lengths)) return(NULL)
 
-    chromosome <- filter(chromosomes, position >= start, position <= end)
+    offsets <- chromosome_offsets(chromosome_lengths)
+
+    chromosome <- filter(offsets, position >= start, position <= end)
     if (nrow(chromosome) != 1) return(NULL)
 
     position <- position - chromosome$offset
