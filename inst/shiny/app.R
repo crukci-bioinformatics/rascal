@@ -521,7 +521,8 @@ server <- function(input, output, session) {
 
       # check for missing values in sample, chromosome, start and end columns
       n <- nrow(copy_number_data)
-      copy_number_data <- filter_at(copy_number_data, vars(sample, chromosome, start, end), all_vars(!is.na(.)))
+      copy_number_data <- filter(copy_number_data, !if_any(c(sample, chromosome, start, end), is.na))
+
       if (n != nrow(copy_number_data)) {
         showModal(modalDialog(title = "Error", strong(file$name), "contains rows with missing values for sample, chromosome, start and/or end."))
         return(NULL)
@@ -778,7 +779,7 @@ server <- function(input, output, session) {
         rownames_to_column(var = "id") %>%
         as_tibble() %>%
         select(id, chromosome, start, end) %>%
-        mutate_at(vars(start, end), as.integer) %>%
+        mutate(across(c(start, end), as.integer)) %>%
         mutate(chromosome = factor(chromosome, levels = unique(chromosome))) %>%
         arrange(chromosome, start) %>%
         mutate(sample = selected_sample) %>%
@@ -795,7 +796,7 @@ server <- function(input, output, session) {
     copy_number <- copy_number %>%
       mutate(copy_number = pmax(copy_number, 0)) %>%
       mutate(segmented = pmax(segmented, 0)) %>%
-      mutate_at(vars(copy_number, segmented), ~ . / median(segmented, na.rm = TRUE))
+      mutate(across(c(copy_number, segmented), ~ . / median(segmented, na.rm = TRUE)))
 
     copy_number %>%
       mutate(position = (start + end) / 2) %>%
@@ -1421,7 +1422,7 @@ server <- function(input, output, session) {
     # note that the seq function occasionally gives values that are slightly out
     # hence the rounding belo
     distances %>%
-      mutate_at(vars(ploidy, cellularity, distance), round, digits = 3)
+      mutate(across(c(ploidy, cellularity, distance), round, digits = 3))
   })
 
   # best fit solutions from grid search over ploidies and cellularities
@@ -1769,7 +1770,7 @@ server <- function(input, output, session) {
 
     # filter rows with missing values
     n <- nrow(ploidies_and_cellularities)
-    ploidies_and_cellularities <- filter_at(ploidies_and_cellularities, vars(sample, ploidy, cellularity), all_vars(!is.na(.)))
+    ploidies_and_cellularities <- filter(ploidies_and_cellularities, !if_any(c(sample, ploidy, cellularity), is.na))
     if (n != nrow(ploidies_and_cellularities)) {
       showModal(
         modalDialog(
@@ -1879,7 +1880,7 @@ server <- function(input, output, session) {
 
     # filter rows with missing values
     n <- nrow(genes)
-    genes <- filter_at(genes, vars(name, chromosome, start, end), all_vars(!is.na(.)))
+    genes <- filter(genes, !if_any(c(name, chromosome, start, end), is.na))
     if (n != nrow(genes)) {
       showModal(
         modalDialog(
