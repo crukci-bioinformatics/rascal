@@ -159,7 +159,7 @@ genome_copy_number_plot <- function(copy_number,
 
   segments <- segments %>%
     left_join(offsets, by = "chromosome") %>%
-    mutate_at(vars(start, end), ~ . + offset) %>%
+    mutate(across(c(start, end), ~ . + offset)) %>%
     select(-offset)
 
   if (is.null(min_copy_number)) {
