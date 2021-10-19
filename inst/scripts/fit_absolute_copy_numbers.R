@@ -61,7 +61,7 @@ copy_number_for_sample <- function(copy_number, sample) {
       rownames_to_column(var = "id") %>%
       as_tibble() %>%
       select(id, chromosome, start, end) %>%
-      mutate_at(vars(start, end), as.integer) %>%
+      mutate(across(c(start, end), as.integer)) %>%
       mutate(chromosome = factor(chromosome, levels = unique(chromosome))) %>%
       mutate(sample = sample) %>%
       mutate(copy_number = copy_number_values) %>%
@@ -117,7 +117,7 @@ for (sample_index in 1:number_of_samples) {
   # copy number fitting requires relative copy numbers where values are relative
   # to the average copy number across the genome - using the median segmented
   # copy number
-  relative_copy_number <- mutate_at(sample_copy_number, vars(copy_number, segmented), ~ . / median(segmented, na.rm = TRUE))
+  relative_copy_number <- mutate(sample_copy_number, across(c(copy_number, segmented), ~ . / median(segmented, na.rm = TRUE)))
 
   segments <- copy_number_segments(relative_copy_number)
 
@@ -135,8 +135,8 @@ for (sample_index in 1:number_of_samples) {
     transmute(sample = sample, ploidy, cellularity, distance)
 
   solutions %>%
-    mutate_at(vars(ploidy, cellularity), round, digits = 2) %>%
-    mutate_at(vars(distance), round, digits = 3) %>%
+    mutate(across(c(ploidy, cellularity), round, digits = 2)) %>%
+    mutate(across(distance, round, digits = 3)) %>%
     write_csv(output_file, append = append)
 
   append <- TRUE
