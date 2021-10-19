@@ -139,9 +139,8 @@ genome_copy_number_plot <- function(copy_number,
   if (!is.null(sample)) {
     stopifnot("sample" %in% names(copy_number))
     stopifnot("sample" %in% names(segments))
-    selected_sample <- sample
-    copy_number <- filter(copy_number, sample == selected_sample)
-    segments <- filter(segments, sample == selected_sample)
+    copy_number <- filter(copy_number, sample == !!sample)
+    segments <- filter(segments, sample == !!sample)
   }
 
   # filter out missing and non-finite values
@@ -354,15 +353,13 @@ chromosome_copy_number_plot <- function(copy_number,
   if (!is.null(sample)) {
     stopifnot("sample" %in% names(copy_number))
     stopifnot("sample" %in% names(segments))
-    selected_sample <- sample
-    copy_number <- filter(copy_number, sample == selected_sample)
-    segments <- filter(segments, sample == selected_sample)
+    copy_number <- filter(copy_number, sample == !!sample)
+    segments <- filter(segments, sample == !!sample)
   }
 
   # filter copy number data for specified chromosome
-  selected_chromosome <- chromosome
-  copy_number <- filter(copy_number, chromosome == selected_chromosome)
-  segments <- filter(segments, chromosome == selected_chromosome)
+  copy_number <- filter(copy_number, chromosome == !!chromosome)
+  segments <- filter(segments, chromosome == !!chromosome)
 
   # filter out missing and non-finite values
   copy_number <- filter(copy_number, is.finite(copy_number))
@@ -374,20 +371,18 @@ chromosome_copy_number_plot <- function(copy_number,
   # filter copy number data for specified start and end
   if (!is.null(start)) {
     stopifnot(is.numeric(start), length(start) == 1, !is.na(start))
-    selected_start <- start
-    copy_number <- filter(copy_number, position >= selected_start)
+    copy_number <- filter(copy_number, position >= !!start)
     segments <- segments %>%
-      filter(end > selected_start) %>%
-      mutate(start = pmax(start, selected_start))
+      filter(end > !!start) %>%
+      mutate(start = pmax(start, !!start))
   }
 
   if (!is.null(end)) {
     stopifnot(is.numeric(end), length(end) == 1, !is.na(end))
-    selected_end <- end
-    copy_number <- filter(copy_number, position <= selected_end)
+    copy_number <- filter(copy_number, position <= !!end)
     segments <- segments %>%
-      filter(start < selected_end) %>%
-      mutate(end = pmin(end, selected_end))
+      filter(start < !!end) %>%
+      mutate(end = pmin(end, !!end))
   }
 
   if (is.null(min_copy_number)) {
@@ -428,7 +423,7 @@ chromosome_copy_number_plot <- function(copy_number,
   plot <- ggplot()
 
   if (!is.null(genes)) {
-    genes <- filter(genes, chromosome == selected_chromosome, start <= xmax, end >= xmin)
+    genes <- filter(genes, chromosome == !!chromosome, start <= xmax, end >= xmin)
     if (nrow(genes) > 0) {
       gene_boundaries <- genes %>%
         pivot_longer(c(start, end), names_to = "type", values_to = "position") %>%

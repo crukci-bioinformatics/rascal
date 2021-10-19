@@ -68,8 +68,7 @@ copy_number_for_sample <- function(copy_number, sample) {
       mutate(segmented = segmented_values) %>%
       select(sample, chromosome, start, end, copy_number, segmented)
   } else {
-    selected_sample <- sample
-    filter(copy_number, sample == selected_sample)
+    filter(copy_number, sample == !!sample)
   }
 }
 
