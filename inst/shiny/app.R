@@ -731,8 +731,7 @@ server <- function(input, output, session) {
 
   # return a list containing the cached ploidy and cellularity for the given sample
   get_cached_ploidy_and_cellularity <- function(sample) {
-    selected_sample <- sample
-    sample_cache <- filter(isolate(reactive_values$ploidy_and_cellularity_cache), sample == selected_sample)
+    sample_cache <- filter(isolate(reactive_values$ploidy_and_cellularity_cache), sample == !!sample)
     if (nrow(sample_cache) == 1)
       as.list(select(sample_cache, ploidy, cellularity))
     else
@@ -927,7 +926,6 @@ server <- function(input, output, session) {
       }
     }
 
-    # cat("creating genome copy number plot\n")
     genome_copy_number_plot(
       copy_number,
       segments,
@@ -1071,7 +1069,6 @@ server <- function(input, output, session) {
       xlabel <- "position"
     }
 
-    # cat("creating chromosome copy number plot", location$chromosome, "\n")
     chromosome_copy_number_plot(
       copy_number,
       segments,
@@ -1132,11 +1129,9 @@ server <- function(input, output, session) {
 
     segments <- segments_for_selected_sample()
 
-    selected_chromosome <- chromosome
-
-    segment <- filter(segments, chromosome == selected_chromosome, start <= position, end >= position)
+    segment <- filter(segments, chromosome == !!chromosome, start <= position, end >= position)
     if (nrow(segment) == 0) {
-      segment <- filter(copy_number, chromosome == selected_chromosome, start <= position, end >= position)
+      segment <- filter(copy_number, chromosome == !!chromosome, start <= position, end >= position)
     }
 
     if (nrow(segment) != 1) return(NULL)
@@ -1152,13 +1147,9 @@ server <- function(input, output, session) {
 
     segments <- segments_for_selected_sample()
 
-    selected_chromosome <- chromosome
-    selected_start <- start
-    selected_end <- end
-
-    segments <- filter(segments, chromosome == selected_chromosome, start <= selected_end, end >= selected_start)
+    segments <- filter(segments, chromosome == !!chromosome, start <= !!end, end >= !!start)
     if (nrow(segments) == 0) {
-      segments <- filter(copy_number, chromosome == selected_chromosome, start <= selected_end, end >= selected_start)
+      segments <- filter(copy_number, chromosome == !!chromosome, start <= !!end, end >= !!start)
     }
 
     select(segments, chromosome, start, end, copy_number, log2ratio)
@@ -1303,8 +1294,6 @@ server <- function(input, output, session) {
     copy_number <- copy_number_for_selected_sample()
     if (is.null(copy_number)) return(ggplot())
 
-    # cat("creating copy number density plot\n")
-
     relative_copy_number_range <- input$relative_copy_number_range
 
     copy_number_steps <- NULL
@@ -1440,8 +1429,6 @@ server <- function(input, output, session) {
 
     distances <- ploidy_and_cellularity_distances()
     if (is.null(distances)) return(ggplot())
-
-    # cat("creating distance heat map\n")
 
     plot <- distance_heatmap(
       distances,
