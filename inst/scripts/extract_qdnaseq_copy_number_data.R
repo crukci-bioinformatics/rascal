@@ -61,11 +61,11 @@ locations <- fData(copy_number) %>%
   mutate(chromosome = factor(chromosome, levels = unique(chromosome)))
 
 number_of_samples <- length(samples)
-if (number_of_samples > 1) cat("Samples: ", number_of_samples, "\n", sep = "")
+if (number_of_samples > 1) message("Samples: ", number_of_samples)
 
 for (sample_index in 1:number_of_samples) {
   sample <- samples[sample_index]
-  cat(sample_index, "/", number_of_samples, " ", sample, "\n", sep = "")
+  message(sample_index, "/", number_of_samples, " ", sample)
 
   copy_number_for_sample <- copy_number[, sample]
 
