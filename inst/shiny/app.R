@@ -18,7 +18,7 @@ ui <- fluidPage(
   tags$style(type = "text/css", "body { padding-top: 60px; }"),
   # tags$style(type = "text/css", ".navbar-default { background-color: #c2d1f0; }"),
   navbarPage(
-    title = a(href="https://www.cruk.cam.ac.uk", target = "_blank", img(style = "width: 180px; margin-right: 10px;", src = "CRUK_CI_logo.png")),
+    title = a(href="https://www.cruk.cam.ac.uk", img(style = "width: 180px; margin-right: 10px;", src = "CRUK_CI_logo.png")),
     windowTitle = "rascal - absolute copy number scaling",
     position = "fixed-top",
     tabPanel(
@@ -243,7 +243,7 @@ ui <- fluidPage(
           "Several research groups at CRUK CI are using shallow whole genome sequencing as a relatively inexpensive method for obtaining copy number profiles for tumour samples, particularly as libraries from several samples can be multiplexed in a single lane of sequencing.",
           p(),
           "We are principally using",
-          tags$a(href = "https://bioconductor.org/packages/release/bioc/html/QDNAseq.html", target = "_blank", "QDNAseq"),
+          tags$a(href = "https://bioconductor.org/packages/release/bioc/html/QDNAseq.html", "QDNAseq"),
           "for summing reads that align within genomic windows or bins, typically 30kb in size, and correcting for GC-content and mappability.",
           "This results in values that are relative to the average copy number within the sample for the GC and mappability of each bin. These relative copy numbers are smoothed and segmented and provide useful insight into genomic abnormalities in cancers.",
           p(),
@@ -252,18 +252,17 @@ ui <- fluidPage(
           "In the absence of such information, and noting the significant increase in cost for deeper sequencing, we can attempt to fit the relative copy number profiles to absolute copy numbers by evaluating various estimates of ploidy and cellularity.",
           p(),
           "The approach used in this application is based on concepts introduced in the",
-          tags$a(href = "https://bioconductor.org/packages/release/bioc/html/ACE.html", target = "_blank", "ACE"),
+          tags$a(href = "https://bioconductor.org/packages/release/bioc/html/ACE.html", "ACE"),
           "package developed by Bauke Ylstra's group at Amsterdam UMC.",
           "The mathematics underpinning this approach assume a single dominant clone; estimating ploidy and cellularity for heterogeneous tumour samples may prove difficult with this method.",
           p(),
           "This application was created using the R Shiny web application framework. It was developed by",
-          tags$a(href = "https://www.cruk.cam.ac.uk/author/matthew-eldridge", target = "_blank", "Matt Eldridge"),
-          "in the",
-          tags$a(href = "https://www.cruk.cam.ac.uk/core-facilities/bioinformatics-core", target = "_blank", "Bioinformatics Core"),
+          "Matt Eldridge in the",
+          tags$a(href = "https://www.cruk.cam.ac.uk/core-facilities/bioinformatics", "Bioinformatics Core"),
           "in collaboration with the",
-          tags$a(href = "https://www.cruk.cam.ac.uk/research-groups/brenton-group", target = "_blank", "James Brenton's laboratory"),
+          tags$a(href = "https://www.cruk.cam.ac.uk/research-groups/brenton-group", "James Brenton's laboratory"),
           "at the",
-          tags$a(href = "https://www.cruk.cam.ac.uk", target = "_blank", "Cancer Research UK Cambridge Institute.")
+          tags$a(href = "https://www.cruk.cam.ac.uk", "Cancer Research UK Cambridge Institute.")
         )
       )
     ),
@@ -440,13 +439,15 @@ ui <- fluidPage(
     )
   ),
   tags$div(
-    style = "clear:both",
+    style = "clear:both; font-size:85%;",
     tags$div(style="line-height:200%;", br()),
     HTML("&copy;"),
     tags$script(type = "text/javascript", "var d = new Date(); document.write(d.getFullYear())"),
     "University of Cambridge",
-    tags$div(style = "float:right", tags$a(href = "https://www.cruk.cam.ac.uk/terms-and-conditions", target = "_blank", "Terms and Conditions"))
+    # tags$div(style = "float:right", tags$a(href = "https://www.cam.ac.uk/about-this-site/terms-and-conditions", "Terms and Conditions"))
   ),
+  # tags$div(style="line-height:25%;", br()),
+  # tags$div(style = "font-size:75%;", "The Institute's cookie policy can be found", tags$a(href = "https://content.cruk.cam.ac.uk/computing/cruk-domains.html", "here."), "By continuing to use this site you are consenting to the use of cookies detailed therein."),
   br()
 )
 
