@@ -447,7 +447,7 @@ ui <- fluidPage(
     # tags$div(style = "float:right", tags$a(href = "https://www.cam.ac.uk/about-this-site/terms-and-conditions", "Terms and Conditions"))
   ),
   # tags$div(style="line-height:25%;", br()),
-  # tags$div(style = "font-size:75%;", "The Institute's cookie policy can be found", tags$a(href = "https://content.cruk.cam.ac.uk/computing/cruk-domains.html", "here.")),
+  # tags$div(style = "font-size:75%; float:right;", "Cancer Research UK Cambridge Institute's cookie policy can be found", tags$a(href = "https://content.cruk.cam.ac.uk/computing/cruk-domains.html", "here."), p()),
   br()
 )
 
